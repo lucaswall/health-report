@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit",
+      "Write",
+      "WebSearch",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "Bash(tsc *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(rm *)",
+      "Bash(pwd)",
+      "Bash(tree *)",
+      "Bash(which *)",
+      "Bash(curl *)",
+      "Bash(diff *)",
+      "Bash(wc *)",
+      "Bash(open *)",
+      "Bash(kill *)",
+      "Bash(lsof *)",
+      "Bash(date *)",
+      "Bash(shasum *)"
+    ],
+    "deny": [
+      "Bash(sudo *)",
+      "Bash(> /etc/*)",
+      "Bash(dd *)"
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}

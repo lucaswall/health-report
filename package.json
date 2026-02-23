@@ -1,0 +1,25 @@
+{
+  "name": "health-report",
+  "version": "1.0.0",
+  "description": "Professional PDF health report generator using Fitbit and Food Scanner data",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "auth": "tsx src/auth/fitbit-oauth.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "puppeteer": "^24.37.5",
+    "skia-canvas": "^3.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
