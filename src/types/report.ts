@@ -187,6 +187,6 @@ export interface HealthReportData {
   body: { recent: BodyData; historical: BodyData };
   vitals: { recent: VitalsData; historical: VitalsData };
   cardio: { recent: CardioData; historical: CardioData };
-  nutrition: { recent: NutritionData; historical: NutritionData } | null;
-  fasting: { recent: FastingData; historical: FastingData } | null;
+  nutrition: { recent: NutritionData; historical: NutritionData };
+  fasting: { recent: FastingData; historical: FastingData };
 }

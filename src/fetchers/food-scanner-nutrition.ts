@@ -21,7 +21,6 @@ export async function fetchNutrition(
         const data = await client.get<FoodScannerNutritionResponse>(
           `/api/v1/nutrition-summary?date=${date}`
         );
-        if (!data) return null;
 
         const day: FoodScannerNutritionDay = {
           date: data.date,
@@ -37,11 +36,7 @@ export async function fetchNutrition(
       })
     );
 
-    for (const day of batchResults) {
-      if (day !== null) {
-        results.push(day);
-      }
-    }
+    results.push(...batchResults);
   }
 
   return results;

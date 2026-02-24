@@ -5,20 +5,9 @@ import type { SectionCharts } from '../../types/charts.js';
 import { statCard, trendBadge, fmtNum, fmtShortDate, renderCharts, escapeHtml } from '../helpers.js';
 
 export function renderFastingSection(
-  data: { recent: FastingData; historical: FastingData } | null,
-  charts: SectionCharts | null,
+  data: { recent: FastingData; historical: FastingData },
+  charts: SectionCharts,
 ): string {
-  if (!data) {
-    return `
-      <div class="section-card">
-        <h2>Fasting</h2>
-        <div class="data-unavailable">
-          Fasting data unavailable. Connect a food tracking source to include this section.
-        </div>
-      </div>
-    `;
-  }
-
   const { recent, historical } = data;
 
   const recentStats = `
@@ -76,7 +65,7 @@ export function renderFastingSection(
     </div>
   `;
 
-  const sectionCharts = charts ?? {};
+  const sectionCharts = charts;
 
   return `
     <div class="section-card">

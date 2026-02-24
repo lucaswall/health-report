@@ -18,6 +18,6 @@ export interface AllCharts {
   body: SectionCharts;
   vitals: SectionCharts;
   cardio: SectionCharts;
-  nutrition: SectionCharts | null;
-  fasting: SectionCharts | null;
+  nutrition: SectionCharts;
+  fasting: SectionCharts;
 }

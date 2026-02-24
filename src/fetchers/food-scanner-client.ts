@@ -8,29 +8,22 @@ export class FoodScannerClient {
     this.apiKey = apiKey;
   }
 
-  async get<T>(path: string): Promise<T | null> {
+  async get<T>(path: string): Promise<T> {
     const url = `${this.baseUrl}${path}`;
 
-    try {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          Accept: 'application/json',
-        },
-      });
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${this.apiKey}`,
+        Accept: 'application/json',
+      },
+    });
 
-      if (!response.ok) {
-        console.warn(
-          `Food Scanner API error: ${response.status} ${response.statusText} for ${path}`
-        );
-        return null;
-      }
-
-      return (await response.json()) as T;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`Food Scanner API request failed for ${path}: ${message}`);
-      return null;
+    if (!response.ok) {
+      throw new Error(
+        `Food Scanner API error: ${response.status} ${response.statusText} for ${path}`
+      );
     }
+
+    return (await response.json()) as T;
   }
 }

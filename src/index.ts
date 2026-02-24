@@ -120,19 +120,15 @@ async function main() {
     historical: processCardio(raw.fitbit.cardioScore.historical),
   };
 
-  const nutrition = raw.nutrition
-    ? {
-        recent: processNutrition(raw.nutrition.recent),
-        historical: processNutrition(raw.nutrition.historical),
-      }
-    : null;
+  const nutrition = {
+    recent: processNutrition(raw.nutrition.recent),
+    historical: processNutrition(raw.nutrition.historical),
+  };
 
-  const fasting = raw.nutrition
-    ? {
-        recent: processFasting(raw.nutrition.recent),
-        historical: processFasting(raw.nutrition.historical),
-      }
-    : null;
+  const fasting = {
+    recent: processFasting(raw.nutrition.recent),
+    historical: processFasting(raw.nutrition.historical),
+  };
 
   const reportData: HealthReportData = {
     profile,
@@ -170,12 +166,8 @@ async function main() {
     renderBodyCharts(body.recent, body.historical),
     renderVitalsCharts(vitals.recent, vitals.historical),
     renderCardioCharts(cardio.recent, cardio.historical),
-    nutrition
-      ? renderNutritionCharts(nutrition.recent, nutrition.historical)
-      : Promise.resolve(null),
-    fasting
-      ? renderFastingCharts(fasting.recent, fasting.historical)
-      : Promise.resolve(null),
+    renderNutritionCharts(nutrition.recent, nutrition.historical),
+    renderFastingCharts(fasting.recent, fasting.historical),
   ]);
 
   const charts: AllCharts = {

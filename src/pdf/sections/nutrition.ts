@@ -5,20 +5,9 @@ import type { SectionCharts } from '../../types/charts.js';
 import { statCard, trendBadge, fmtNum, renderCharts } from '../helpers.js';
 
 export function renderNutritionSection(
-  data: { recent: NutritionData; historical: NutritionData } | null,
-  charts: SectionCharts | null,
+  data: { recent: NutritionData; historical: NutritionData },
+  charts: SectionCharts,
 ): string {
-  if (!data) {
-    return `
-      <div class="section-card">
-        <h2>Nutrition</h2>
-        <div class="data-unavailable">
-          Nutrition data unavailable. Connect a food tracking source to include this section.
-        </div>
-      </div>
-    `;
-  }
-
   const { recent, historical } = data;
 
   const recentStats = `
@@ -140,7 +129,7 @@ export function renderNutritionSection(
     </table>
   `;
 
-  const sectionCharts = charts ?? {};
+  const sectionCharts = charts;
 
   return `
     <div class="section-card">

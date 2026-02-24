@@ -46,7 +46,7 @@ export interface RawFitbitData {
 
 export interface RawFetchResult {
   fitbit: RawFitbitData;
-  nutrition: { recent: FoodScannerNutritionDay[]; historical: FoodScannerNutritionDay[] } | null;
+  nutrition: { recent: FoodScannerNutritionDay[]; historical: FoodScannerNutritionDay[] };
 }
 
 async function refreshToken(currentTokens: FitbitTokens): Promise<FitbitTokens> {
@@ -98,10 +98,11 @@ function createFitbitClient(): FitbitClient {
   });
 }
 
-function createFoodScannerClient(): FoodScannerClient | null {
+function createFoodScannerClient(): FoodScannerClient {
   if (!config.foodScanner.apiKey) {
-    console.warn('No Food Scanner API key configured. Nutrition data will be unavailable.');
-    return null;
+    throw new Error(
+      'Missing FOOD_SCANNER_API_KEY environment variable. Add it to your .env file.'
+    );
   }
   return new FoodScannerClient(config.foodScanner.url, config.foodScanner.apiKey);
 }
@@ -168,22 +169,14 @@ export async function fetchAll(
 
   console.log('All Fitbit data fetched successfully.');
 
-  // Fetch nutrition data if food scanner is available
-  let nutrition: RawFetchResult['nutrition'] = null;
-  if (foodClient) {
-    console.log('Fetching nutrition data from Food Scanner...');
-    try {
-      const [recentNutrition, historicalNutrition] = await Promise.all([
-        fetchNutrition(foodClient, recentRange),
-        fetchNutrition(foodClient, historicalRange),
-      ]);
-      nutrition = { recent: recentNutrition, historical: historicalNutrition };
-      console.log('Nutrition data fetched successfully.');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`Failed to fetch nutrition data: ${message}`);
-    }
-  }
+  // Fetch nutrition data from Food Scanner
+  console.log('Fetching nutrition data from Food Scanner...');
+  const [recentNutrition, historicalNutrition] = await Promise.all([
+    fetchNutrition(foodClient, recentRange),
+    fetchNutrition(foodClient, historicalRange),
+  ]);
+  const nutrition = { recent: recentNutrition, historical: historicalNutrition };
+  console.log('Nutrition data fetched successfully.');
 
   return {
     fitbit: {

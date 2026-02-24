@@ -41,7 +41,7 @@ export const config = {
   },
   foodScanner: {
     url: optionalEnv('FOOD_SCANNER_URL', 'http://localhost:3000'),
-    apiKey: process.env.FOOD_SCANNER_API_KEY || '',
+    apiKey: requireEnv('FOOD_SCANNER_API_KEY'),
   },
   report: {
     outputDir: optionalEnv('REPORT_OUTPUT_DIR', './output'),
