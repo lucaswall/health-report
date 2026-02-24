@@ -11,7 +11,6 @@ import type {
   FitbitSkinTempDay,
   FitbitCardioDay,
   FitbitWaterDay,
-  FitbitGlucoseDay,
   FitbitTokens,
 } from '../types/fitbit.js';
 import type { FoodScannerNutritionDay } from '../types/food-scanner.js';
@@ -32,7 +31,6 @@ import { fetchBody } from './fitbit-body.js';
 import { fetchSpO2, fetchBreathingRate, fetchSkinTemp } from './fitbit-vitals.js';
 import { fetchCardioScore } from './fitbit-cardio.js';
 import { fetchWater } from './fitbit-water.js';
-import { fetchGlucose } from './fitbit-glucose.js';
 import { fetchNutrition } from './food-scanner-nutrition.js';
 
 const ONE_HOUR_MS = 3_600_000;
@@ -51,7 +49,6 @@ export interface RawFitbitData {
   skinTemp: FitbitSkinTempDay[];
   cardioScore: FitbitCardioDay[];
   water: FitbitWaterDay[];
-  glucose: FitbitGlucoseDay[];
 }
 
 export interface RawFetchResult {
@@ -144,7 +141,6 @@ export async function fetchAll(
     skinTemp,
     cardioScore,
     water,
-    glucose,
   ] = await Promise.all([
     fetchProfile(profileClient),
     fetchActivity(fitbitClient, dateRange),
@@ -158,7 +154,6 @@ export async function fetchAll(
     fetchSkinTemp(fitbitClient, dateRange),
     fetchCardioScore(fitbitClient, dateRange),
     fetchWater(fitbitClient, dateRange),
-    fetchGlucose(fitbitClient, dateRange),
   ]);
 
   console.log('All Fitbit data fetched successfully.');
@@ -181,7 +176,6 @@ export async function fetchAll(
       skinTemp,
       cardioScore,
       water,
-      glucose,
     },
     nutrition,
   };

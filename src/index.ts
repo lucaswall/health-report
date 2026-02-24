@@ -16,7 +16,6 @@ import { processCardio } from './processors/cardio.js';
 import { processNutrition } from './processors/nutrition.js';
 import { processFasting } from './processors/fasting.js';
 import { processWater } from './processors/water.js';
-import { processGlucose } from './processors/glucose.js';
 
 // Charts
 import { renderActivityCharts } from './charts/activity-charts.js';
@@ -29,7 +28,6 @@ import { renderCardioCharts } from './charts/cardio-charts.js';
 import { renderNutritionCharts } from './charts/nutrition-charts.js';
 import { renderFastingCharts } from './charts/fasting-charts.js';
 import { renderWaterCharts } from './charts/water-charts.js';
-import { renderGlucoseCharts } from './charts/glucose-charts.js';
 
 // PDF
 import { composeHtml } from './pdf/template.js';
@@ -97,7 +95,6 @@ async function main() {
   const nutrition = processNutrition(raw.nutrition);
   const fasting = processFasting(raw.nutrition);
   const water = processWater(raw.fitbit.water);
-  const glucose = processGlucose(raw.fitbit.glucose);
 
   const reportData: HealthReportData = {
     profile,
@@ -112,7 +109,6 @@ async function main() {
     nutrition,
     fasting,
     water,
-    glucose,
   };
 
   // 4. Render charts
@@ -129,7 +125,6 @@ async function main() {
     nutritionCharts,
     fastingCharts,
     waterCharts,
-    glucoseCharts,
   ] = await Promise.all([
     renderActivityCharts(activity),
     renderExerciseCharts(exercise),
@@ -141,7 +136,6 @@ async function main() {
     renderNutritionCharts(nutrition),
     renderFastingCharts(fasting),
     renderWaterCharts(water),
-    renderGlucoseCharts(glucose),
   ]);
 
   const charts: AllCharts = {
@@ -155,7 +149,6 @@ async function main() {
     nutrition: nutritionCharts,
     fasting: fastingCharts,
     water: waterCharts,
-    glucose: glucoseCharts,
   };
 
   // 5. Generate PDF

@@ -22,15 +22,30 @@ export async function fetchNutrition(
           `/api/v1/nutrition-summary?date=${date}`
         );
 
+        const summary = data.summary;
+        if (!summary) {
+          // Day with no food data logged — return zeroes
+          return {
+            date: data.date ?? date,
+            totalCalories: 0,
+            totalProtein: 0,
+            totalCarbs: 0,
+            totalFat: 0,
+            totalFiber: 0,
+            totalSodium: 0,
+            meals: [],
+          } satisfies FoodScannerNutritionDay;
+        }
+
         const day: FoodScannerNutritionDay = {
           date: data.date,
-          totalCalories: data.summary.calories,
-          totalProtein: data.summary.protein,
-          totalCarbs: data.summary.carbs,
-          totalFat: data.summary.fat,
-          totalFiber: data.summary.fiber,
-          totalSodium: data.summary.sodium,
-          meals: data.meals,
+          totalCalories: summary.calories,
+          totalProtein: summary.protein,
+          totalCarbs: summary.carbs,
+          totalFat: summary.fat,
+          totalFiber: summary.fiber,
+          totalSodium: summary.sodium,
+          meals: data.meals ?? [],
         };
         return day;
       })

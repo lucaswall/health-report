@@ -21,5 +21,4 @@ export interface AllCharts {
   nutrition: SectionCharts;
   fasting: SectionCharts;
   water: SectionCharts;
-  glucose: SectionCharts;
 }

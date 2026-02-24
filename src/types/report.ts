@@ -173,18 +173,6 @@ export interface WaterData {
   };
 }
 
-// Blood Glucose
-export interface GlucoseData {
-  daily: {
-    avg: DailyValue[];
-    min: DailyValue[];
-    max: DailyValue[];
-  };
-  stats: {
-    glucose: TrendStats;
-  };
-}
-
 // Profile
 export interface ProfileData {
   name: string;
@@ -209,5 +197,4 @@ export interface HealthReportData {
   nutrition: NutritionData;
   fasting: FastingData;
   water: WaterData;
-  glucose: GlucoseData;
 }

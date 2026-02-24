@@ -15,7 +15,7 @@ export async function fetchWater(
 
   for (let i = 0; i < days.length; i += BATCH_SIZE) {
     const batch = days.slice(i, i + BATCH_SIZE);
-    const batchResults = await Promise.allSettled(
+    const batchResults = await Promise.all(
       batch.map(async (date) => {
         const path = `/1/user/-/foods/log/water/date/${date}.json`;
         const data = await client.get<FitbitWaterResponse>(path);
@@ -26,13 +26,7 @@ export async function fetchWater(
         return day;
       })
     );
-    for (const r of batchResults) {
-      if (r.status === 'fulfilled') {
-        results.push(r.value);
-      } else {
-        console.warn(`Failed to fetch water data: ${r.reason instanceof Error ? r.reason.message : String(r.reason)}`);
-      }
-    }
+    results.push(...batchResults);
   }
 
   return results;

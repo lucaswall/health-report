@@ -29,6 +29,7 @@ export const config = {
       'heartrate',
       'sleep',
       'weight',
+      'nutrition',
       'oxygen_saturation',
       'respiratory_rate',
       'temperature',
