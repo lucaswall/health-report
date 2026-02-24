@@ -40,6 +40,7 @@ export class DiskCache {
 
       return entry.data;
     } catch {
+      // Corrupt or unreadable cache entry — treat as miss
       return null;
     }
   }

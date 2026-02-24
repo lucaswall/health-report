@@ -46,6 +46,7 @@ export class FitbitClient {
         Authorization: `Bearer ${this.accessToken}`,
         Accept: 'application/json',
       },
+      signal: AbortSignal.timeout(30_000),
     });
 
     // Check rate limit header and pause proactively if running low

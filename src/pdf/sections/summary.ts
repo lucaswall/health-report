@@ -1,6 +1,6 @@
 // PDF section: executive summary with key highlights
 
-import type { HealthReportData } from '../../types/report.js';
+import type { HealthReportData, TrendStats } from '../../types/report.js';
 import { statCard, trendBadge, fmtNum } from '../helpers.js';
 
 export function renderSummary(data: HealthReportData): string {
@@ -39,7 +39,7 @@ export function renderSummary(data: HealthReportData): string {
   cards.push(statCard('VO2 Max', fmtNum(latestVo2, 1), 'ml/kg/min'));
 
   // Trend badges row
-  const trends: Array<{ label: string; stats: { trend: string; percentChange: number } }> = [
+  const trends: Array<{ label: string; stats: Pick<TrendStats, 'trend' | 'percentChange'> }> = [
     { label: 'Steps', stats: activity.stats.steps },
     { label: 'Resting HR', stats: heart.stats.restingHR },
     { label: 'Sleep', stats: sleep.stats.duration },
@@ -57,7 +57,7 @@ export function renderSummary(data: HealthReportData): string {
       (t) =>
         `<div style="display:inline-block;margin-right:12px;margin-bottom:4px;">
           <span style="font-size:9px;color:#4a5568;margin-right:4px;">${t.label}:</span>
-          ${trendBadge(t.stats as any)}
+          ${trendBadge(t.stats)}
         </div>`,
     )
     .join('');

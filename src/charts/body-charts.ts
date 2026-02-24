@@ -51,7 +51,7 @@ async function renderWeightTrend(data: BodyData) {
       },
       scales: {
         x: { ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 10 } },
-        y: { beginAtZero: false, title: { display: true, text: 'lbs' } },
+        y: { beginAtZero: false, title: { display: true, text: 'kg' } },
       },
     },
   };

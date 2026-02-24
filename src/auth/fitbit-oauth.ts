@@ -53,6 +53,7 @@ async function exchangeCodeForTokens(code: string, codeVerifier: string): Promis
       Authorization: `Basic ${credentials}`,
     },
     body: body.toString(),
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {
@@ -88,6 +89,7 @@ export async function refreshToken(): Promise<FitbitTokens> {
       Authorization: `Basic ${credentials}`,
     },
     body: body.toString(),
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {
@@ -138,18 +140,16 @@ export function startAuthFlow(): Promise<void> {
         const error = requestUrl.searchParams.get('error');
 
         if (error) {
-          res.writeHead(400, { 'Content-Type': 'text/html' });
-          res.end(`<h1>Authorization failed</h1><p>${error}</p>`);
-          server.close();
-          reject(new Error(`Authorization denied: ${error}`));
+          res.writeHead(400, { 'Content-Type': 'text/plain' });
+          res.end(`Authorization failed: ${error}`);
+          server.close(() => reject(new Error(`Authorization denied: ${error}`)));
           return;
         }
 
         if (!code) {
-          res.writeHead(400, { 'Content-Type': 'text/html' });
-          res.end('<h1>Missing authorization code</h1>');
-          server.close();
-          reject(new Error('No authorization code received'));
+          res.writeHead(400, { 'Content-Type': 'text/plain' });
+          res.end('Missing authorization code');
+          server.close(() => reject(new Error('No authorization code received')));
           return;
         }
 
@@ -162,13 +162,11 @@ export function startAuthFlow(): Promise<void> {
         );
 
         console.log('Tokens saved successfully.');
-        server.close();
-        resolve();
+        server.close(() => resolve());
       } catch (err) {
-        res.writeHead(500, { 'Content-Type': 'text/html' });
-        res.end('<h1>Authorization failed</h1><p>Check the terminal for details.</p>');
-        server.close();
-        reject(err);
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('Authorization failed. Check the terminal for details.');
+        server.close(() => reject(err));
       }
     });
 

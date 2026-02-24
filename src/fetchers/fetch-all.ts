@@ -75,6 +75,7 @@ async function refreshToken(currentTokens: FitbitTokens): Promise<FitbitTokens> 
       Authorization: `Basic ${btoa(`${config.fitbit.clientId}:${config.fitbit.clientSecret}`)}`,
     },
     body,
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {

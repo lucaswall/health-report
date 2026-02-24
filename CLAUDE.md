@@ -24,7 +24,7 @@ TypeScript CLI tool: Fitbit API + Food Scanner data → PDF health report.
 - Named exports only — no default exports
 
 ## Key Patterns
-- IMPORTANT: `FoodScannerNutritionDay` (not `FoodScannerNutritionResponse`) flows through processors
+- IMPORTANT: `FoodScannerNutritionDay` flows through processors; raw API uses `FoodScannerApiResponse<FoodScannerNutritionSummary>` wrapper
 - `ActivityRaw` / `BodyRaw` adapter types bridge Fitbit API kebab-case keys to clean interfaces — adapters `toActivityRaw()` / `toBodyRaw()` live in `src/index.ts`
 - IMPORTANT: All Chart.js charts MUST use `animation: false`, `responsive: false` for server-side rendering
 - 1-year data uses `weeklyAverage()` to reduce chart data points

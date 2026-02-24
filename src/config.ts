@@ -49,3 +49,16 @@ export const config = {
     date: process.env.REPORT_DATE || undefined,
   },
 } as const;
+
+// Validate Food Scanner URL protocol
+let parsedFoodScannerUrl: URL;
+try {
+  parsedFoodScannerUrl = new URL(config.foodScanner.url);
+} catch {
+  throw new Error(`Invalid FOOD_SCANNER_URL: "${config.foodScanner.url}" is not a valid URL`);
+}
+if (parsedFoodScannerUrl.protocol !== 'http:' && parsedFoodScannerUrl.protocol !== 'https:') {
+  throw new Error(
+    `Invalid FOOD_SCANNER_URL protocol: ${parsedFoodScannerUrl.protocol} (must be http: or https:)`
+  );
+}

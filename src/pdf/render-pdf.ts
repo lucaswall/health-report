@@ -12,8 +12,9 @@ export async function renderPdf(html: string): Promise<Buffer> {
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
+  let page: Awaited<ReturnType<typeof browser.newPage>> | null = null;
   try {
-    const page = await browser.newPage();
+    page = await browser.newPage();
 
     await page.setContent(html, {
       waitUntil: 'networkidle0',
@@ -34,6 +35,9 @@ export async function renderPdf(html: string): Promise<Buffer> {
     // page.pdf() returns a Uint8Array; convert to Buffer
     return Buffer.from(pdfBuffer);
   } finally {
+    if (page) {
+      try { await page.close(); } catch { /* browser.close() will clean up */ }
+    }
     await browser.close();
   }
 }

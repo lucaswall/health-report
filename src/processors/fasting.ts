@@ -10,7 +10,9 @@ function extractTime(timestamp: string): string {
 }
 
 function timeToDecimalHours(time: string): number {
-  const [hours, minutes] = time.split(':').map(Number);
+  const [h, m] = time.split(':').map(Number);
+  const hours = isNaN(h) ? 0 : h;
+  const minutes = isNaN(m) ? 0 : m;
   return hours + minutes / 60;
 }
 

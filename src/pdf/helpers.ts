@@ -6,7 +6,7 @@ import type { ChartImage } from '../types/charts.js';
 /**
  * Render a colored badge showing trend direction and percent change.
  */
-export function trendBadge(stats: TrendStats): string {
+export function trendBadge(stats: Pick<TrendStats, 'trend' | 'percentChange'>): string {
   const label =
     stats.trend === 'improving'
       ? `Improving ${stats.percentChange > 0 ? '+' : ''}${stats.percentChange}%`

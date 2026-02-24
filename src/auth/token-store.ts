@@ -14,20 +14,21 @@ export function loadTokens(): FitbitTokens | null {
     const raw = readFileSync(TOKEN_PATH, 'utf-8');
     return JSON.parse(raw) as FitbitTokens;
   } catch {
+    // Corrupt or unreadable token file — treat as missing
     return null;
   }
 }
 
 export function saveTokens(tokens: FitbitTokens): void {
   const dir = dirname(TOKEN_PATH);
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
 
   // Compute absolute expiry timestamp if not already set
   if (!tokens.expires_at) {
     tokens.expires_at = Date.now() + tokens.expires_in * 1000;
   }
 
-  writeFileSync(TOKEN_PATH, JSON.stringify(tokens, null, 2), 'utf-8');
+  writeFileSync(TOKEN_PATH, JSON.stringify(tokens, null, 2), { encoding: 'utf-8', mode: 0o600 });
 }
 
 export function isExpired(tokens: FitbitTokens): boolean {

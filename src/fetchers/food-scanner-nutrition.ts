@@ -1,5 +1,10 @@
 import type { FoodScannerClient } from './food-scanner-client.js';
-import type { FoodScannerNutritionDay, FoodScannerNutritionResponse } from '../types/food-scanner.js';
+import type {
+  FoodScannerNutritionDay,
+  FoodScannerMeal,
+  FoodScannerApiResponse,
+  FoodScannerNutritionSummary,
+} from '../types/food-scanner.js';
 import type { DateRange } from '../types/report.js';
 import { eachDay } from '../processors/date-utils.js';
 
@@ -18,36 +23,43 @@ export async function fetchNutrition(
     const batch = days.slice(i, i + BATCH_SIZE);
     const batchResults = await Promise.all(
       batch.map(async (date) => {
-        const data = await client.get<FoodScannerNutritionResponse>(
-          `/api/v1/nutrition-summary?date=${date}`
-        );
+        try {
+          const response = await client.get<FoodScannerApiResponse<FoodScannerNutritionSummary>>(
+            `/api/v1/nutrition-summary?date=${date}`
+          );
 
-        const summary = data.summary;
-        if (!summary) {
-          // Day with no food data logged — return zeroes
+          const data = response.data;
+          if (!data || !data.totals) {
+            return emptyDay(date);
+          }
+
+          // Flatten meal group entries into FoodScannerMeal[] for fasting processor
+          const meals: FoodScannerMeal[] = [];
+          for (const group of data.meals ?? []) {
+            for (const entry of group.entries) {
+              if (entry.time) {
+                meals.push({
+                  name: entry.foodName,
+                  timestamp: `${data.date}T${entry.time}`,
+                });
+              }
+            }
+          }
+
           return {
-            date: data.date ?? date,
-            totalCalories: 0,
-            totalProtein: 0,
-            totalCarbs: 0,
-            totalFat: 0,
-            totalFiber: 0,
-            totalSodium: 0,
-            meals: [],
+            date: data.date,
+            totalCalories: data.totals.calories,
+            totalProtein: data.totals.proteinG,
+            totalCarbs: data.totals.carbsG,
+            totalFat: data.totals.fatG,
+            totalFiber: data.totals.fiberG,
+            totalSodium: data.totals.sodiumMg,
+            meals,
           } satisfies FoodScannerNutritionDay;
+        } catch (error) {
+          console.warn(`Failed to fetch nutrition for ${date}: ${error instanceof Error ? error.message : String(error)}`);
+          return emptyDay(date);
         }
-
-        const day: FoodScannerNutritionDay = {
-          date: data.date,
-          totalCalories: summary.calories,
-          totalProtein: summary.protein,
-          totalCarbs: summary.carbs,
-          totalFat: summary.fat,
-          totalFiber: summary.fiber,
-          totalSodium: summary.sodium,
-          meals: data.meals ?? [],
-        };
-        return day;
       })
     );
 
@@ -55,4 +67,17 @@ export async function fetchNutrition(
   }
 
   return results;
+}
+
+function emptyDay(date: string): FoodScannerNutritionDay {
+  return {
+    date,
+    totalCalories: 0,
+    totalProtein: 0,
+    totalCarbs: 0,
+    totalFat: 0,
+    totalFiber: 0,
+    totalSodium: 0,
+    meals: [],
+  };
 }

@@ -1,21 +1,12 @@
-import type { FitbitSleepLog, FitbitSleepStages } from '../types/fitbit.js';
+import type { FitbitSleepLog } from '../types/fitbit.js';
 import type { DailyValue, SleepData } from '../types/report.js';
 import { computeTrendStats } from './date-utils.js';
 
 function getStageMinutes(
   log: FitbitSleepLog,
 ): { deep: number; light: number; rem: number; wake: number } {
-  if (log.type === 'stages') {
-    const summary = log.levels.summary as FitbitSleepStages;
-    return {
-      deep: summary.deep,
-      light: summary.light,
-      rem: summary.rem,
-      wake: summary.wake,
-    };
-  }
-
-  // Classic sleep type uses a different summary structure
+  // Both 'stages' and 'classic' types use the same summary structure:
+  // each key maps to { count, minutes, thirtyDayAvgMinutes }
   const summary = log.levels.summary as Record<
     string,
     { count: number; minutes: number; thirtyDayAvgMinutes: number }
@@ -30,8 +21,11 @@ function getStageMinutes(
 }
 
 export function processSleep(sleepLogs: FitbitSleepLog[]): SleepData {
-  // Filter for main sleep only
-  const mainSleepLogs = sleepLogs.filter((log) => log.isMainSleep);
+  // Filter for main sleep only and sort chronologically
+  // (Fitbit API returns sleep logs newest-first)
+  const mainSleepLogs = sleepLogs
+    .filter((log) => log.isMainSleep)
+    .sort((a, b) => a.dateOfSleep.localeCompare(b.dateOfSleep));
 
   const duration: DailyValue[] = [];
   const efficiency: DailyValue[] = [];

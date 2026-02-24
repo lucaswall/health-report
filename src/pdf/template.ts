@@ -45,6 +45,16 @@ export function composeHtml(data: HealthReportData, charts: AllCharts): string {
   ${summary}
 
   <div class="page-break"></div>
+  ${nutrition}
+
+  ${fasting}
+
+  <div class="page-break"></div>
+  ${water}
+
+  ${body}
+
+  <div class="page-break"></div>
   ${activity}
 
   <div class="page-break"></div>
@@ -56,20 +66,9 @@ export function composeHtml(data: HealthReportData, charts: AllCharts): string {
   <div class="page-break"></div>
   ${sleep}
 
-  <div class="page-break"></div>
-  ${body}
-
   ${vitals}
 
   ${cardio}
-
-  <div class="page-break"></div>
-  ${nutrition}
-
-  ${fasting}
-
-  <div class="page-break"></div>
-  ${water}
 </body>
 </html>`;
 }

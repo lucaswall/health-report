@@ -27,10 +27,10 @@ export async function fetchBody(
     })
   );
 
-  const merged: Record<string, FitbitDailyActivity[]> = {};
+  const merged = {} as FitbitBodyTimeSeries;
   for (const { key, values } of results) {
     merged[key] = values;
   }
 
-  return merged as unknown as FitbitBodyTimeSeries;
+  return merged;
 }

@@ -41,10 +41,10 @@ export async function fetchActivity(
     })
   );
 
-  const merged: Record<string, FitbitDailyActivity[]> = {};
+  const merged = {} as FitbitActivityTimeSeries;
   for (const { key, values } of results) {
     merged[key] = values;
   }
 
-  return merged as unknown as FitbitActivityTimeSeries;
+  return merged;
 }
