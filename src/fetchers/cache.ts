@@ -13,10 +13,12 @@ const CACHE_BASE = join(homedir(), '.cache', 'health-report');
 export class DiskCache {
   private readonly dir: string;
   private readonly ttlMs: number;
+  private readonly volatilePattern: string | null;
 
-  constructor(namespace: string, ttlMs: number = 3_600_000) {
+  constructor(namespace: string, ttlMs: number = 3_600_000, volatilePattern?: string) {
     this.dir = join(CACHE_BASE, namespace);
     this.ttlMs = ttlMs;
+    this.volatilePattern = volatilePattern ?? null;
     mkdirSync(this.dir, { recursive: true });
   }
 
@@ -28,7 +30,10 @@ export class DiskCache {
       const raw = readFileSync(file, 'utf-8');
       const entry = JSON.parse(raw) as CacheEntry<T>;
 
-      if (Date.now() - entry.cachedAt > this.ttlMs) {
+      // Apply TTL only to volatile entries (keys containing today's date);
+      // all other entries persist forever
+      const isVolatile = this.volatilePattern !== null && path.includes(this.volatilePattern);
+      if (isVolatile && Date.now() - entry.cachedAt > this.ttlMs) {
         try { unlinkSync(file); } catch { /* ignore */ }
         return null;
       }
