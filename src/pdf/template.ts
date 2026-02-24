@@ -14,6 +14,8 @@ import { renderVitalsSection } from './sections/vitals.js';
 import { renderCardioSection } from './sections/cardio.js';
 import { renderNutritionSection } from './sections/nutrition.js';
 import { renderFastingSection } from './sections/fasting.js';
+import { renderWaterSection } from './sections/water.js';
+import { renderGlucoseSection } from './sections/glucose.js';
 
 export function composeHtml(data: HealthReportData, charts: AllCharts): string {
   const styles = getStyles();
@@ -29,6 +31,8 @@ export function composeHtml(data: HealthReportData, charts: AllCharts): string {
   const cardio = renderCardioSection(data.cardio, charts.cardio);
   const nutrition = renderNutritionSection(data.nutrition, charts.nutrition);
   const fasting = renderFastingSection(data.fasting, charts.fasting);
+  const water = renderWaterSection(data.water, charts.water);
+  const glucose = renderGlucoseSection(data.glucose, charts.glucose);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -65,6 +69,11 @@ export function composeHtml(data: HealthReportData, charts: AllCharts): string {
   ${nutrition}
 
   ${fasting}
+
+  <div class="page-break"></div>
+  ${water}
+
+  ${glucose}
 </body>
 </html>`;
 }

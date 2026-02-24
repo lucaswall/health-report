@@ -165,6 +165,26 @@ export interface FastingData {
   };
 }
 
+// Water
+export interface WaterData {
+  daily: DailyValue[];
+  stats: {
+    water: TrendStats;
+  };
+}
+
+// Blood Glucose
+export interface GlucoseData {
+  daily: {
+    avg: DailyValue[];
+    min: DailyValue[];
+    max: DailyValue[];
+  };
+  stats: {
+    glucose: TrendStats;
+  };
+}
+
 // Profile
 export interface ProfileData {
   name: string;
@@ -189,4 +209,6 @@ export interface HealthReportData {
   cardio: { recent: CardioData; historical: CardioData };
   nutrition: { recent: NutritionData; historical: NutritionData };
   fasting: { recent: FastingData; historical: FastingData };
+  water: { recent: WaterData; historical: WaterData };
+  glucose: { recent: GlucoseData; historical: GlucoseData };
 }

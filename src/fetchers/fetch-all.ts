@@ -10,6 +10,8 @@ import type {
   FitbitBreathingRateDay,
   FitbitSkinTempDay,
   FitbitCardioDay,
+  FitbitWaterDay,
+  FitbitGlucoseDay,
   FitbitTokens,
 } from '../types/fitbit.js';
 import type { FoodScannerNutritionDay } from '../types/food-scanner.js';
@@ -17,6 +19,7 @@ import type { DateRange } from '../types/report.js';
 
 import { FitbitClient } from './fitbit-client.js';
 import { FoodScannerClient } from './food-scanner-client.js';
+import { DiskCache } from './cache.js';
 import { loadTokens, saveTokens, isExpired } from '../auth/token-store.js';
 import { config } from '../config.js';
 
@@ -28,7 +31,12 @@ import { fetchSleep } from './fitbit-sleep.js';
 import { fetchBody } from './fitbit-body.js';
 import { fetchSpO2, fetchBreathingRate, fetchSkinTemp } from './fitbit-vitals.js';
 import { fetchCardioScore } from './fitbit-cardio.js';
+import { fetchWater } from './fitbit-water.js';
+import { fetchGlucose } from './fitbit-glucose.js';
 import { fetchNutrition } from './food-scanner-nutrition.js';
+
+const ONE_HOUR_MS = 3_600_000;
+const TWENTY_FOUR_HOURS_MS = 24 * ONE_HOUR_MS;
 
 export interface RawFitbitData {
   profile: FitbitProfile;
@@ -42,6 +50,8 @@ export interface RawFitbitData {
   breathingRate: { recent: FitbitBreathingRateDay[]; historical: FitbitBreathingRateDay[] };
   skinTemp: { recent: FitbitSkinTempDay[]; historical: FitbitSkinTempDay[] };
   cardioScore: { recent: FitbitCardioDay[]; historical: FitbitCardioDay[] };
+  water: { recent: FitbitWaterDay[]; historical: FitbitWaterDay[] };
+  glucose: { recent: FitbitGlucoseDay[]; historical: FitbitGlucoseDay[] };
 }
 
 export interface RawFetchResult {
@@ -81,7 +91,7 @@ async function refreshToken(currentTokens: FitbitTokens): Promise<FitbitTokens> 
   return newTokens;
 }
 
-function createFitbitClient(): FitbitClient {
+function createFitbitClient(cache?: DiskCache): FitbitClient {
   const tokens = loadTokens();
   if (!tokens) {
     throw new Error(
@@ -95,30 +105,35 @@ function createFitbitClient(): FitbitClient {
   return new FitbitClient(accessToken, async (_) => {
     const refreshed = await refreshToken(tokens);
     return refreshed;
-  });
+  }, cache);
 }
 
-function createFoodScannerClient(): FoodScannerClient {
+function createFoodScannerClient(cache?: DiskCache): FoodScannerClient {
   if (!config.foodScanner.apiKey) {
     throw new Error(
       'Missing FOOD_SCANNER_API_KEY environment variable. Add it to your .env file.'
     );
   }
-  return new FoodScannerClient(config.foodScanner.url, config.foodScanner.apiKey);
+  return new FoodScannerClient(config.foodScanner.url, config.foodScanner.apiKey, cache);
 }
 
 export async function fetchAll(
   recentRange: DateRange,
   historicalRange: DateRange
 ): Promise<RawFetchResult> {
-  const fitbitClient = createFitbitClient();
-  const foodClient = createFoodScannerClient();
+  const fitbitCache = new DiskCache('fitbit', ONE_HOUR_MS);
+  const foodCache = new DiskCache('food-scanner', ONE_HOUR_MS);
+  const profileCache = new DiskCache('fitbit-profile', TWENTY_FOUR_HOURS_MS);
+
+  const fitbitClient = createFitbitClient(fitbitCache);
+  const profileClient = createFitbitClient(profileCache);
+  const foodClient = createFoodScannerClient(foodCache);
 
   console.log(`Fetching data for recent: ${recentRange.start} to ${recentRange.end}`);
   console.log(`Fetching data for historical: ${historicalRange.start} to ${historicalRange.end}`);
 
-  // Fetch profile (only needs one call)
-  const profilePromise = fetchProfile(fitbitClient);
+  // Fetch profile (only needs one call, cached 24h)
+  const profilePromise = fetchProfile(profileClient);
 
   // Fetch all Fitbit data for both ranges in parallel
   const [
@@ -143,6 +158,10 @@ export async function fetchAll(
     historicalSkinTemp,
     recentCardio,
     historicalCardio,
+    recentWater,
+    historicalWater,
+    recentGlucose,
+    historicalGlucose,
   ] = await Promise.all([
     profilePromise,
     fetchActivity(fitbitClient, recentRange),
@@ -165,6 +184,10 @@ export async function fetchAll(
     fetchSkinTemp(fitbitClient, historicalRange),
     fetchCardioScore(fitbitClient, recentRange),
     fetchCardioScore(fitbitClient, historicalRange),
+    fetchWater(fitbitClient, recentRange),
+    fetchWater(fitbitClient, historicalRange),
+    fetchGlucose(fitbitClient, recentRange),
+    fetchGlucose(fitbitClient, historicalRange),
   ]);
 
   console.log('All Fitbit data fetched successfully.');
@@ -191,6 +214,8 @@ export async function fetchAll(
       breathingRate: { recent: recentBreathingRate, historical: historicalBreathingRate },
       skinTemp: { recent: recentSkinTemp, historical: historicalSkinTemp },
       cardioScore: { recent: recentCardio, historical: historicalCardio },
+      water: { recent: recentWater, historical: historicalWater },
+      glucose: { recent: recentGlucose, historical: historicalGlucose },
     },
     nutrition,
   };

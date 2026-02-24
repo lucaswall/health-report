@@ -20,4 +20,6 @@ export interface AllCharts {
   cardio: SectionCharts;
   nutrition: SectionCharts;
   fasting: SectionCharts;
+  water: SectionCharts;
+  glucose: SectionCharts;
 }

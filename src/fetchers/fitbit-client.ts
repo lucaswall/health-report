@@ -1,4 +1,5 @@
 import type { FitbitTokens } from '../types/fitbit.js';
+import type { DiskCache } from './cache.js';
 
 const FITBIT_API_BASE = 'https://api.fitbit.com';
 const RATE_LIMIT_THRESHOLD = 10;
@@ -10,14 +11,27 @@ export type TokenRefreshCallback = (tokens: FitbitTokens) => Promise<FitbitToken
 export class FitbitClient {
   private accessToken: string;
   private onTokenRefresh: TokenRefreshCallback | null;
+  private cache: DiskCache | null;
 
-  constructor(accessToken: string, onTokenRefresh?: TokenRefreshCallback) {
+  constructor(accessToken: string, onTokenRefresh?: TokenRefreshCallback, cache?: DiskCache) {
     this.accessToken = accessToken;
     this.onTokenRefresh = onTokenRefresh ?? null;
+    this.cache = cache ?? null;
   }
 
   async get<T>(path: string): Promise<T> {
-    return this.request<T>(path, 0);
+    if (this.cache) {
+      const cached = this.cache.get<T>(path);
+      if (cached !== null) return cached;
+    }
+
+    const result = await this.request<T>(path, 0);
+
+    if (this.cache) {
+      this.cache.set(path, result);
+    }
+
+    return result;
   }
 
   async getTimeSeries(resource: string, start: string, end: string): Promise<unknown> {

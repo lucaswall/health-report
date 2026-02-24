@@ -190,6 +190,31 @@ export interface FitbitCardioResponse {
   cardioScore: FitbitCardioDay[];
 }
 
+// Water
+export interface FitbitWaterResponse {
+  summary: { water: number };
+  water: unknown[];
+}
+
+export interface FitbitWaterDay {
+  date: string;
+  water: number; // ml
+}
+
+// Blood Glucose
+export interface FitbitGlucoseDay {
+  dateTime: string;
+  value: {
+    avg?: number;
+    min?: number;
+    max?: number;
+  };
+}
+
+export interface FitbitGlucoseResponse {
+  glucose: FitbitGlucoseDay[];
+}
+
 // Token types
 export interface FitbitTokens {
   access_token: string;

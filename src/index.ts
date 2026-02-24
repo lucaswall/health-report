@@ -15,6 +15,8 @@ import { processVitals } from './processors/vitals.js';
 import { processCardio } from './processors/cardio.js';
 import { processNutrition } from './processors/nutrition.js';
 import { processFasting } from './processors/fasting.js';
+import { processWater } from './processors/water.js';
+import { processGlucose } from './processors/glucose.js';
 
 // Charts
 import { renderActivityCharts } from './charts/activity-charts.js';
@@ -26,6 +28,8 @@ import { renderVitalsCharts } from './charts/vitals-charts.js';
 import { renderCardioCharts } from './charts/cardio-charts.js';
 import { renderNutritionCharts } from './charts/nutrition-charts.js';
 import { renderFastingCharts } from './charts/fasting-charts.js';
+import { renderWaterCharts } from './charts/water-charts.js';
+import { renderGlucoseCharts } from './charts/glucose-charts.js';
 
 // PDF
 import { composeHtml } from './pdf/template.js';
@@ -130,6 +134,16 @@ async function main() {
     historical: processFasting(raw.nutrition.historical),
   };
 
+  const water = {
+    recent: processWater(raw.fitbit.water.recent),
+    historical: processWater(raw.fitbit.water.historical),
+  };
+
+  const glucose = {
+    recent: processGlucose(raw.fitbit.glucose.recent),
+    historical: processGlucose(raw.fitbit.glucose.historical),
+  };
+
   const reportData: HealthReportData = {
     profile,
     dateRange: recentRange,
@@ -143,6 +157,8 @@ async function main() {
     cardio,
     nutrition,
     fasting,
+    water,
+    glucose,
   };
 
   // 4. Render charts
@@ -158,6 +174,8 @@ async function main() {
     cardioCharts,
     nutritionCharts,
     fastingCharts,
+    waterCharts,
+    glucoseCharts,
   ] = await Promise.all([
     renderActivityCharts(activity.recent, activity.historical),
     renderExerciseCharts(exercise.recent, exercise.historical),
@@ -168,6 +186,8 @@ async function main() {
     renderCardioCharts(cardio.recent, cardio.historical),
     renderNutritionCharts(nutrition.recent, nutrition.historical),
     renderFastingCharts(fasting.recent, fasting.historical),
+    renderWaterCharts(water.recent, water.historical),
+    renderGlucoseCharts(glucose.recent, glucose.historical),
   ]);
 
   const charts: AllCharts = {
@@ -180,6 +200,8 @@ async function main() {
     cardio: cardioCharts,
     nutrition: nutritionCharts,
     fasting: fastingCharts,
+    water: waterCharts,
+    glucose: glucoseCharts,
   };
 
   // 5. Generate PDF
