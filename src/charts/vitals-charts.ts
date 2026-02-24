@@ -13,13 +13,12 @@ const TEAL_FILL = '#0d948833';
 const PURPLE_FILL = '#7c3aed33';
 
 export async function renderVitalsCharts(
-  recent: VitalsData,
-  historical: VitalsData,
+  data: VitalsData,
 ): Promise<SectionCharts> {
   const [spo2Line, breathingRateLine, skinTempLine] = await Promise.all([
-    renderSpO2Line(recent),
-    renderBreathingRateLine(recent),
-    renderSkinTempLine(recent),
+    renderSpO2Line(data),
+    renderBreathingRateLine(data),
+    renderSkinTempLine(data),
   ]);
 
   return {
@@ -133,7 +132,7 @@ async function renderSkinTempLine(data: VitalsData) {
       },
       scales: {
         x: { ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 10 } },
-        y: { beginAtZero: false, title: { display: true, text: 'Variation (°F)' } },
+        y: { beginAtZero: false, title: { display: true, text: 'Variation (\u00B0F)' } },
       },
     },
   };

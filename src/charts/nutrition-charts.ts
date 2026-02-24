@@ -6,19 +6,17 @@ import { formatShortDate } from '../processors/date-utils.js';
 
 // Medical report color palette
 const BLUE = '#2563eb';
-const TEAL = '#0d9488';
 const GREEN = '#16a34a';
 const ORANGE = '#ea580c';
 const BLUE_FILL = '#2563eb33';
 
 export async function renderNutritionCharts(
-  recent: NutritionData,
-  historical: NutritionData,
+  data: NutritionData,
 ): Promise<SectionCharts> {
   const [calorieBar, macroDoughnut, macroStackedBars] = await Promise.all([
-    renderCalorieBar(recent),
-    renderMacroDoughnut(recent),
-    renderMacroStackedBars(recent),
+    renderCalorieBar(data),
+    renderMacroDoughnut(data),
+    renderMacroStackedBars(data),
   ]);
 
   return {
@@ -48,7 +46,7 @@ async function renderCalorieBar(data: NutritionData) {
     },
     options: {
       plugins: {
-        title: { display: true, text: 'Daily Calorie Intake (30 Days)', font: { size: 16 } },
+        title: { display: true, text: 'Daily Calorie Intake', font: { size: 16 } },
         legend: { display: false },
       },
       scales: {
@@ -115,7 +113,7 @@ async function renderMacroStackedBars(data: NutritionData) {
     },
     options: {
       plugins: {
-        title: { display: true, text: 'Daily Macronutrients (30 Days)', font: { size: 16 } },
+        title: { display: true, text: 'Daily Macronutrients', font: { size: 16 } },
         legend: { display: true, position: 'bottom' },
       },
       scales: {

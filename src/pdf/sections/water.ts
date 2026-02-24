@@ -5,28 +5,26 @@ import type { SectionCharts } from '../../types/charts.js';
 import { statCard, trendBadge, fmtNum, renderCharts } from '../helpers.js';
 
 export function renderWaterSection(
-  data: { recent: WaterData; historical: WaterData },
+  data: WaterData,
   charts: SectionCharts,
 ): string {
-  const { recent, historical } = data;
+  const latestWater = data.daily.length > 0
+    ? data.daily[data.daily.length - 1].value
+    : data.stats.water.average;
 
-  const latestWater = recent.daily.length > 0
-    ? recent.daily[recent.daily.length - 1].value
-    : recent.stats.water.average;
-
-  const recentStats = `
+  const stats = `
     <div class="stat-grid">
       ${statCard('Latest Intake', fmtNum(latestWater), 'ml')}
-      ${statCard('Avg Intake', fmtNum(recent.stats.water.average), 'ml')}
-      ${statCard('Min', fmtNum(recent.stats.water.min), 'ml')}
-      ${statCard('Max', fmtNum(recent.stats.water.max), 'ml')}
+      ${statCard('Avg Intake', fmtNum(data.stats.water.average), 'ml')}
+      ${statCard('Min', fmtNum(data.stats.water.min), 'ml')}
+      ${statCard('Max', fmtNum(data.stats.water.max), 'ml')}
     </div>
     <div style="margin-bottom:8px;">
-      Water Intake: ${trendBadge(recent.stats.water)}
+      Water Intake: ${trendBadge(data.stats.water)}
     </div>
   `;
 
-  const recentTable = `
+  const statsTable = `
     <table>
       <thead>
         <tr><th>Metric</th><th>Average</th><th>Min</th><th>Max</th><th>Trend</th></tr>
@@ -34,27 +32,10 @@ export function renderWaterSection(
       <tbody>
         <tr>
           <td>Water (ml)</td>
-          <td class="num">${fmtNum(recent.stats.water.average)}</td>
-          <td class="num">${fmtNum(recent.stats.water.min)}</td>
-          <td class="num">${fmtNum(recent.stats.water.max)}</td>
-          <td>${trendBadge(recent.stats.water)}</td>
-        </tr>
-      </tbody>
-    </table>
-  `;
-
-  const histTable = `
-    <table>
-      <thead>
-        <tr><th>Metric</th><th>Average</th><th>Min</th><th>Max</th><th>Trend</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Water (ml)</td>
-          <td class="num">${fmtNum(historical.stats.water.average)}</td>
-          <td class="num">${fmtNum(historical.stats.water.min)}</td>
-          <td class="num">${fmtNum(historical.stats.water.max)}</td>
-          <td>${trendBadge(historical.stats.water)}</td>
+          <td class="num">${fmtNum(data.stats.water.average)}</td>
+          <td class="num">${fmtNum(data.stats.water.min)}</td>
+          <td class="num">${fmtNum(data.stats.water.max)}</td>
+          <td>${trendBadge(data.stats.water)}</td>
         </tr>
       </tbody>
     </table>
@@ -63,19 +44,9 @@ export function renderWaterSection(
   return `
     <div class="section-card">
       <h2>Water Intake</h2>
-      ${recentStats}
-      <div class="two-col">
-        <div class="col">
-          <div class="col-label">Recent (30 Days)</div>
-          ${recentTable}
-          ${renderCharts(charts, ['waterTrend'])}
-        </div>
-        <div class="col">
-          <div class="col-label">Historical (1 Year)</div>
-          ${histTable}
-          ${renderCharts(charts, ['waterHistorical'])}
-        </div>
-      </div>
+      ${stats}
+      ${statsTable}
+      ${renderCharts(charts, ['waterTrend'])}
     </div>
   `;
 }

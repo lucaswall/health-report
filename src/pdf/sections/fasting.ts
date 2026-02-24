@@ -5,24 +5,22 @@ import type { SectionCharts } from '../../types/charts.js';
 import { statCard, trendBadge, fmtNum, fmtShortDate, renderCharts, escapeHtml } from '../helpers.js';
 
 export function renderFastingSection(
-  data: { recent: FastingData; historical: FastingData },
+  data: FastingData,
   charts: SectionCharts,
 ): string {
-  const { recent, historical } = data;
-
-  const recentStats = `
+  const stats = `
     <div class="stat-grid cols-3">
-      ${statCard('Avg Eating Window', fmtNum(recent.averageEatingWindow, 1), 'hrs')}
-      ${statCard('Avg Fasting', fmtNum(recent.averageFastingHours, 1), 'hrs')}
-      ${statCard('Days Tracked', String(recent.daily.length))}
+      ${statCard('Avg Eating Window', fmtNum(data.averageEatingWindow, 1), 'hrs')}
+      ${statCard('Avg Fasting', fmtNum(data.averageFastingHours, 1), 'hrs')}
+      ${statCard('Days Tracked', String(data.daily.length))}
     </div>
     <div style="margin-bottom:8px;">
-      Eating Window: ${trendBadge(recent.stats.eatingWindow)}
+      Eating Window: ${trendBadge(data.stats.eatingWindow)}
     </div>
   `;
 
   // Daily fasting log (last 14 days)
-  const recentDays = recent.daily.slice(-14).reverse();
+  const recentDays = data.daily.slice(-14).reverse();
   const dailyRows = recentDays
     .map(
       (day) => `
@@ -53,37 +51,13 @@ export function renderFastingSection(
     </table>
   `;
 
-  // Historical stats
-  const histStats = `
-    <div class="stat-grid cols-3">
-      ${statCard('Avg Eating Window', fmtNum(historical.averageEatingWindow, 1), 'hrs')}
-      ${statCard('Avg Fasting', fmtNum(historical.averageFastingHours, 1), 'hrs')}
-      ${statCard('Days Tracked', String(historical.daily.length))}
-    </div>
-    <div style="margin-bottom:8px;">
-      Eating Window: ${trendBadge(historical.stats.eatingWindow)}
-    </div>
-  `;
-
-  const sectionCharts = charts;
-
   return `
     <div class="section-card">
       <h2>Fasting</h2>
-      ${recentStats}
-      <div class="two-col">
-        <div class="col">
-          <div class="col-label">Recent (30 Days)</div>
-          <h3>Recent Eating Windows</h3>
-          ${dailyTable}
-          ${renderCharts(sectionCharts, ['eatingWindow', 'fastingHours'])}
-        </div>
-        <div class="col">
-          <div class="col-label">Historical (1 Year)</div>
-          ${histStats}
-          ${renderCharts(sectionCharts, ['eatingWindowHistorical', 'fastingHoursHistorical'])}
-        </div>
-      </div>
+      ${stats}
+      <h3>Recent Eating Windows</h3>
+      ${dailyTable}
+      ${renderCharts(charts, ['eatingWindowBar'])}
     </div>
   `;
 }

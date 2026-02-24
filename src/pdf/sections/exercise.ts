@@ -5,22 +5,20 @@ import type { SectionCharts } from '../../types/charts.js';
 import { statCard, fmtNum, fmtShortDate, renderCharts, escapeHtml } from '../helpers.js';
 
 export function renderExerciseSection(
-  data: { recent: ExerciseData; historical: ExerciseData },
+  data: ExerciseData,
   charts: SectionCharts,
 ): string {
-  const { recent, historical } = data;
-
-  const recentStats = `
+  const stats = `
     <div class="stat-grid">
-      ${statCard('Total Sessions', fmtNum(recent.totalSessions))}
-      ${statCard('Total Minutes', fmtNum(recent.totalMinutes), 'min')}
-      ${statCard('Avg / Week', fmtNum(recent.averagePerWeek, 1), 'sessions')}
-      ${statCard('Activity Types', String(Object.keys(recent.byType).length))}
+      ${statCard('Total Sessions', fmtNum(data.totalSessions))}
+      ${statCard('Total Minutes', fmtNum(data.totalMinutes), 'min')}
+      ${statCard('Avg / Week', fmtNum(data.averagePerWeek, 1), 'sessions')}
+      ${statCard('Activity Types', String(Object.keys(data.byType).length))}
     </div>
   `;
 
   // Recent exercise log table (last 15 entries)
-  const recentLogs = recent.logs.slice(-15).reverse();
+  const recentLogs = data.logs.slice(-15).reverse();
   const logRows = recentLogs
     .map(
       (log) => `
@@ -52,7 +50,7 @@ export function renderExerciseSection(
   `;
 
   // By-type breakdown table
-  const typeEntries = Object.entries(recent.byType).sort((a, b) => b[1].count - a[1].count);
+  const typeEntries = Object.entries(data.byType).sort((a, b) => b[1].count - a[1].count);
   const typeRows = typeEntries
     .map(
       ([name, info]) => `
@@ -81,35 +79,15 @@ export function renderExerciseSection(
     </table>
   `;
 
-  // Historical stats
-  const histStats = `
-    <div class="stat-grid">
-      ${statCard('Total Sessions', fmtNum(historical.totalSessions))}
-      ${statCard('Total Minutes', fmtNum(historical.totalMinutes), 'min')}
-      ${statCard('Avg / Week', fmtNum(historical.averagePerWeek, 1), 'sessions')}
-      ${statCard('Activity Types', String(Object.keys(historical.byType).length))}
-    </div>
-  `;
-
   return `
     <div class="section-card">
       <h2>Exercise</h2>
-      ${recentStats}
-      <div class="two-col">
-        <div class="col">
-          <div class="col-label">Recent (30 Days)</div>
-          <h3>Recent Workouts</h3>
-          ${logTable}
-          <h3>By Activity Type</h3>
-          ${typeTable}
-          ${renderCharts(charts, ['byType', 'weeklyFrequency'])}
-        </div>
-        <div class="col">
-          <div class="col-label">Historical (1 Year)</div>
-          ${histStats}
-          ${renderCharts(charts, ['byTypeHistorical', 'weeklyFrequencyHistorical'])}
-        </div>
-      </div>
+      ${stats}
+      <h3>Recent Workouts</h3>
+      ${logTable}
+      <h3>By Activity Type</h3>
+      ${typeTable}
+      ${renderCharts(charts, ['exerciseByType'])}
     </div>
   `;
 }

@@ -6,7 +6,6 @@ import { fmtDate } from '../helpers.js';
 export function renderHeader(
   profile: ProfileData,
   dateRange: DateRange,
-  historicalRange: DateRange,
 ): string {
   return `
     <div class="report-header">
@@ -31,10 +30,6 @@ export function renderHeader(
           <div class="info-item">
             <span class="info-label">Report Period:</span>
             <span>${fmtDate(dateRange.start)} &ndash; ${fmtDate(dateRange.end)}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Historical:</span>
-            <span>${fmtDate(historicalRange.start)} &ndash; ${fmtDate(historicalRange.end)}</span>
           </div>
         </div>
       </div>

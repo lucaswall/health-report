@@ -13,19 +13,10 @@ export function getReportDate(overrideDate?: string): string {
   return formatDate(new Date());
 }
 
-export function get30DayRange(endDate: string): DateRange {
-  const end = parseDate(endDate);
-  const start = new Date(end);
-  start.setDate(start.getDate() - 29);
-  return { start: formatDate(start), end: endDate };
-}
-
-export function get1YearRange(endDate: string): DateRange {
-  const end = parseDate(endDate);
-  const start = new Date(end);
-  start.setFullYear(start.getFullYear() - 1);
-  start.setDate(start.getDate() + 1);
-  return { start: formatDate(start), end: endDate };
+export function getCurrentMonthRange(reportDate: string): DateRange {
+  const end = parseDate(reportDate);
+  const start = new Date(end.getFullYear(), end.getMonth(), 1);
+  return { start: formatDate(start), end: reportDate };
 }
 
 export function chunkDateRange(range: DateRange, chunkDays: number): DateRange[] {
@@ -107,22 +98,3 @@ export function formatShortDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export function formatMonthYear(dateStr: string): string {
-  const d = parseDate(dateStr);
-  return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-}
-
-export function weeklyAverage(values: DailyValue[]): DailyValue[] {
-  if (values.length === 0) return [];
-
-  const weeks: DailyValue[] = [];
-  for (let i = 0; i < values.length; i += 7) {
-    const chunk = values.slice(i, i + 7);
-    const validValues = chunk.filter((v) => v.value !== 0);
-    if (validValues.length > 0) {
-      const avg = validValues.reduce((a, b) => a + b.value, 0) / validValues.length;
-      weeks.push({ date: chunk[0].date, value: Math.round(avg * 100) / 100 });
-    }
-  }
-  return weeks;
-}

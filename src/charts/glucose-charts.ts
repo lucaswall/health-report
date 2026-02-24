@@ -2,7 +2,7 @@ import type { ChartConfiguration } from 'chart.js';
 import type { GlucoseData } from '../types/report.js';
 import type { SectionCharts } from '../types/charts.js';
 import { renderChart, makeChartImage } from './chart-renderer.js';
-import { formatShortDate, formatMonthYear, weeklyAverage } from '../processors/date-utils.js';
+import { formatShortDate } from '../processors/date-utils.js';
 
 const RED = '#dc2626';
 const RED_FILL = '#dc262633';
@@ -11,17 +11,12 @@ const ORANGE_FILL = '#ea580c33';
 const YELLOW = '#ca8a04';
 
 export async function renderGlucoseCharts(
-  recent: GlucoseData,
-  historical: GlucoseData,
+  data: GlucoseData,
 ): Promise<SectionCharts> {
-  const [glucoseTrend, glucoseHistorical] = await Promise.all([
-    renderGlucoseTrend(recent),
-    renderGlucoseHistorical(historical),
-  ]);
+  const glucoseTrend = await renderGlucoseTrend(data);
 
   return {
     glucoseTrend,
-    glucoseHistorical,
   };
 }
 
@@ -68,48 +63,11 @@ async function renderGlucoseTrend(data: GlucoseData) {
     },
     options: {
       plugins: {
-        title: { display: true, text: 'Blood Glucose (30 Days)', font: { size: 16 } },
+        title: { display: true, text: 'Blood Glucose', font: { size: 16 } },
         legend: { display: true, position: 'bottom' },
       },
       scales: {
         x: { ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 10 } },
-        y: { beginAtZero: false, title: { display: true, text: 'mg/dL' } },
-      },
-    },
-  };
-
-  const base64 = await renderChart(config);
-  return makeChartImage(base64, 800, 400);
-}
-
-async function renderGlucoseHistorical(data: GlucoseData) {
-  const weekly = weeklyAverage(data.daily.avg);
-  const labels = weekly.map((d) => formatMonthYear(d.date));
-  const values = weekly.map((d) => d.value);
-
-  const config: ChartConfiguration = {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Weekly Avg Glucose',
-          data: values,
-          borderColor: RED,
-          backgroundColor: RED_FILL,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 2,
-        },
-      ],
-    },
-    options: {
-      plugins: {
-        title: { display: true, text: 'Blood Glucose - Weekly Average (1 Year)', font: { size: 16 } },
-        legend: { display: false },
-      },
-      scales: {
-        x: { ticks: { maxRotation: 45, autoSkip: true, maxTicksLimit: 12 } },
         y: { beginAtZero: false, title: { display: true, text: 'mg/dL' } },
       },
     },

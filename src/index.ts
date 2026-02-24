@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { config } from './config.js';
-import { getReportDate, get30DayRange, get1YearRange } from './processors/date-utils.js';
+import { getReportDate, getCurrentMonthRange } from './processors/date-utils.js';
 import { fetchAll } from './fetchers/fetch-all.js';
 
 // Processors
@@ -64,18 +64,16 @@ async function main() {
   console.log('Health Report Generator');
   console.log('=======================\n');
 
-  // 1. Determine date ranges
+  // 1. Determine date range
   const reportDate = getReportDate(config.report.date);
-  const recentRange = get30DayRange(reportDate);
-  const historicalRange = get1YearRange(reportDate);
+  const dateRange = getCurrentMonthRange(reportDate);
 
   console.log(`Report date: ${reportDate}`);
-  console.log(`30-day range: ${recentRange.start} to ${recentRange.end}`);
-  console.log(`1-year range: ${historicalRange.start} to ${historicalRange.end}\n`);
+  console.log(`Date range: ${dateRange.start} to ${dateRange.end}\n`);
 
   // 2. Fetch all data
   console.log('Step 1/4: Fetching data...');
-  const raw = await fetchAll(recentRange, historicalRange);
+  const raw = await fetchAll(dateRange);
 
   // 3. Process data
   console.log('Step 2/4: Processing data...');
@@ -89,65 +87,21 @@ async function main() {
     memberSince: raw.fitbit.profile.user.memberSince,
   };
 
-  const activity = {
-    recent: processActivity(toActivityRaw(raw.fitbit.activity.recent)),
-    historical: processActivity(toActivityRaw(raw.fitbit.activity.historical)),
-  };
-
-  const exercise = {
-    recent: processExercise(raw.fitbit.exercise.recent),
-    historical: processExercise(raw.fitbit.exercise.historical),
-  };
-
-  const heart = {
-    recent: processHeart(raw.fitbit.heartRate.recent, raw.fitbit.hrv.recent),
-    historical: processHeart(raw.fitbit.heartRate.historical, raw.fitbit.hrv.historical),
-  };
-
-  const sleep = {
-    recent: processSleep(raw.fitbit.sleep.recent),
-    historical: processSleep(raw.fitbit.sleep.historical),
-  };
-
-  const body = {
-    recent: processBody(toBodyRaw(raw.fitbit.body.recent)),
-    historical: processBody(toBodyRaw(raw.fitbit.body.historical)),
-  };
-
-  const vitals = {
-    recent: processVitals(raw.fitbit.spo2.recent, raw.fitbit.breathingRate.recent, raw.fitbit.skinTemp.recent),
-    historical: processVitals(raw.fitbit.spo2.historical, raw.fitbit.breathingRate.historical, raw.fitbit.skinTemp.historical),
-  };
-
-  const cardio = {
-    recent: processCardio(raw.fitbit.cardioScore.recent),
-    historical: processCardio(raw.fitbit.cardioScore.historical),
-  };
-
-  const nutrition = {
-    recent: processNutrition(raw.nutrition.recent),
-    historical: processNutrition(raw.nutrition.historical),
-  };
-
-  const fasting = {
-    recent: processFasting(raw.nutrition.recent),
-    historical: processFasting(raw.nutrition.historical),
-  };
-
-  const water = {
-    recent: processWater(raw.fitbit.water.recent),
-    historical: processWater(raw.fitbit.water.historical),
-  };
-
-  const glucose = {
-    recent: processGlucose(raw.fitbit.glucose.recent),
-    historical: processGlucose(raw.fitbit.glucose.historical),
-  };
+  const activity = processActivity(toActivityRaw(raw.fitbit.activity));
+  const exercise = processExercise(raw.fitbit.exercise);
+  const heart = processHeart(raw.fitbit.heartRate, raw.fitbit.hrv);
+  const sleep = processSleep(raw.fitbit.sleep);
+  const body = processBody(toBodyRaw(raw.fitbit.body));
+  const vitals = processVitals(raw.fitbit.spo2, raw.fitbit.breathingRate, raw.fitbit.skinTemp);
+  const cardio = processCardio(raw.fitbit.cardioScore);
+  const nutrition = processNutrition(raw.nutrition);
+  const fasting = processFasting(raw.nutrition);
+  const water = processWater(raw.fitbit.water);
+  const glucose = processGlucose(raw.fitbit.glucose);
 
   const reportData: HealthReportData = {
     profile,
-    dateRange: recentRange,
-    historicalRange,
+    dateRange,
     activity,
     exercise,
     heart,
@@ -177,17 +131,17 @@ async function main() {
     waterCharts,
     glucoseCharts,
   ] = await Promise.all([
-    renderActivityCharts(activity.recent, activity.historical),
-    renderExerciseCharts(exercise.recent, exercise.historical),
-    renderHeartCharts(heart.recent, heart.historical),
-    renderSleepCharts(sleep.recent, sleep.historical),
-    renderBodyCharts(body.recent, body.historical),
-    renderVitalsCharts(vitals.recent, vitals.historical),
-    renderCardioCharts(cardio.recent, cardio.historical),
-    renderNutritionCharts(nutrition.recent, nutrition.historical),
-    renderFastingCharts(fasting.recent, fasting.historical),
-    renderWaterCharts(water.recent, water.historical),
-    renderGlucoseCharts(glucose.recent, glucose.historical),
+    renderActivityCharts(activity),
+    renderExerciseCharts(exercise),
+    renderHeartCharts(heart),
+    renderSleepCharts(sleep),
+    renderBodyCharts(body),
+    renderVitalsCharts(vitals),
+    renderCardioCharts(cardio),
+    renderNutritionCharts(nutrition),
+    renderFastingCharts(fasting),
+    renderWaterCharts(water),
+    renderGlucoseCharts(glucose),
   ]);
 
   const charts: AllCharts = {

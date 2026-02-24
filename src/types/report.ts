@@ -199,16 +199,15 @@ export interface ProfileData {
 export interface HealthReportData {
   profile: ProfileData;
   dateRange: DateRange;
-  historicalRange: DateRange;
-  activity: { recent: ActivityData; historical: ActivityData };
-  exercise: { recent: ExerciseData; historical: ExerciseData };
-  heart: { recent: HeartData; historical: HeartData };
-  sleep: { recent: SleepData; historical: SleepData };
-  body: { recent: BodyData; historical: BodyData };
-  vitals: { recent: VitalsData; historical: VitalsData };
-  cardio: { recent: CardioData; historical: CardioData };
-  nutrition: { recent: NutritionData; historical: NutritionData };
-  fasting: { recent: FastingData; historical: FastingData };
-  water: { recent: WaterData; historical: WaterData };
-  glucose: { recent: GlucoseData; historical: GlucoseData };
+  activity: ActivityData;
+  exercise: ExerciseData;
+  heart: HeartData;
+  sleep: SleepData;
+  body: BodyData;
+  vitals: VitalsData;
+  cardio: CardioData;
+  nutrition: NutritionData;
+  fasting: FastingData;
+  water: WaterData;
+  glucose: GlucoseData;
 }

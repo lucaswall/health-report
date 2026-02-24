@@ -20,7 +20,7 @@ import { renderGlucoseSection } from './sections/glucose.js';
 export function composeHtml(data: HealthReportData, charts: AllCharts): string {
   const styles = getStyles();
 
-  const header = renderHeader(data.profile, data.dateRange, data.historicalRange);
+  const header = renderHeader(data.profile, data.dateRange);
   const summary = renderSummary(data);
   const activity = renderActivitySection(data.activity, charts.activity);
   const exercise = renderExerciseSection(data.exercise, charts.exercise);

@@ -40,23 +40,23 @@ const TWENTY_FOUR_HOURS_MS = 24 * ONE_HOUR_MS;
 
 export interface RawFitbitData {
   profile: FitbitProfile;
-  activity: { recent: FitbitActivityTimeSeries; historical: FitbitActivityTimeSeries };
-  exercise: { recent: FitbitExerciseLog[]; historical: FitbitExerciseLog[] };
-  heartRate: { recent: FitbitHeartRateDay[]; historical: FitbitHeartRateDay[] };
-  hrv: { recent: FitbitHrvDay[]; historical: FitbitHrvDay[] };
-  sleep: { recent: FitbitSleepLog[]; historical: FitbitSleepLog[] };
-  body: { recent: FitbitBodyTimeSeries; historical: FitbitBodyTimeSeries };
-  spo2: { recent: FitbitSpO2Day[]; historical: FitbitSpO2Day[] };
-  breathingRate: { recent: FitbitBreathingRateDay[]; historical: FitbitBreathingRateDay[] };
-  skinTemp: { recent: FitbitSkinTempDay[]; historical: FitbitSkinTempDay[] };
-  cardioScore: { recent: FitbitCardioDay[]; historical: FitbitCardioDay[] };
-  water: { recent: FitbitWaterDay[]; historical: FitbitWaterDay[] };
-  glucose: { recent: FitbitGlucoseDay[]; historical: FitbitGlucoseDay[] };
+  activity: FitbitActivityTimeSeries;
+  exercise: FitbitExerciseLog[];
+  heartRate: FitbitHeartRateDay[];
+  hrv: FitbitHrvDay[];
+  sleep: FitbitSleepLog[];
+  body: FitbitBodyTimeSeries;
+  spo2: FitbitSpO2Day[];
+  breathingRate: FitbitBreathingRateDay[];
+  skinTemp: FitbitSkinTempDay[];
+  cardioScore: FitbitCardioDay[];
+  water: FitbitWaterDay[];
+  glucose: FitbitGlucoseDay[];
 }
 
 export interface RawFetchResult {
   fitbit: RawFitbitData;
-  nutrition: { recent: FoodScannerNutritionDay[]; historical: FoodScannerNutritionDay[] };
+  nutrition: FoodScannerNutritionDay[];
 }
 
 async function refreshToken(currentTokens: FitbitTokens): Promise<FitbitTokens> {
@@ -118,104 +118,70 @@ function createFoodScannerClient(cache?: DiskCache): FoodScannerClient {
 }
 
 export async function fetchAll(
-  recentRange: DateRange,
-  historicalRange: DateRange
+  dateRange: DateRange
 ): Promise<RawFetchResult> {
-  const fitbitCache = new DiskCache('fitbit', ONE_HOUR_MS);
-  const foodCache = new DiskCache('food-scanner', ONE_HOUR_MS);
+  const today = dateRange.end;
+  const fitbitCache = new DiskCache('fitbit', ONE_HOUR_MS, today);
+  const foodCache = new DiskCache('food-scanner', ONE_HOUR_MS, today);
   const profileCache = new DiskCache('fitbit-profile', TWENTY_FOUR_HOURS_MS);
 
   const fitbitClient = createFitbitClient(fitbitCache);
   const profileClient = createFitbitClient(profileCache);
   const foodClient = createFoodScannerClient(foodCache);
 
-  console.log(`Fetching data for recent: ${recentRange.start} to ${recentRange.end}`);
-  console.log(`Fetching data for historical: ${historicalRange.start} to ${historicalRange.end}`);
+  console.log(`Fetching data for: ${dateRange.start} to ${dateRange.end}`);
 
-  // Fetch profile (only needs one call, cached 24h)
-  const profilePromise = fetchProfile(profileClient);
-
-  // Fetch all Fitbit data for both ranges in parallel
   const [
     profile,
-    recentActivity,
-    historicalActivity,
-    recentExercise,
-    historicalExercise,
-    recentHeartRate,
-    historicalHeartRate,
-    recentHrv,
-    historicalHrv,
-    recentSleep,
-    historicalSleep,
-    recentBody,
-    historicalBody,
-    recentSpO2,
-    historicalSpO2,
-    recentBreathingRate,
-    historicalBreathingRate,
-    recentSkinTemp,
-    historicalSkinTemp,
-    recentCardio,
-    historicalCardio,
-    recentWater,
-    historicalWater,
-    recentGlucose,
-    historicalGlucose,
+    activity,
+    exercise,
+    heartRate,
+    hrv,
+    sleep,
+    body,
+    spo2,
+    breathingRate,
+    skinTemp,
+    cardioScore,
+    water,
+    glucose,
   ] = await Promise.all([
-    profilePromise,
-    fetchActivity(fitbitClient, recentRange),
-    fetchActivity(fitbitClient, historicalRange),
-    fetchExercise(fitbitClient, recentRange),
-    fetchExercise(fitbitClient, historicalRange),
-    fetchHeartRate(fitbitClient, recentRange),
-    fetchHeartRate(fitbitClient, historicalRange),
-    fetchHrv(fitbitClient, recentRange),
-    fetchHrv(fitbitClient, historicalRange),
-    fetchSleep(fitbitClient, recentRange),
-    fetchSleep(fitbitClient, historicalRange),
-    fetchBody(fitbitClient, recentRange),
-    fetchBody(fitbitClient, historicalRange),
-    fetchSpO2(fitbitClient, recentRange),
-    fetchSpO2(fitbitClient, historicalRange),
-    fetchBreathingRate(fitbitClient, recentRange),
-    fetchBreathingRate(fitbitClient, historicalRange),
-    fetchSkinTemp(fitbitClient, recentRange),
-    fetchSkinTemp(fitbitClient, historicalRange),
-    fetchCardioScore(fitbitClient, recentRange),
-    fetchCardioScore(fitbitClient, historicalRange),
-    fetchWater(fitbitClient, recentRange),
-    fetchWater(fitbitClient, historicalRange),
-    fetchGlucose(fitbitClient, recentRange),
-    fetchGlucose(fitbitClient, historicalRange),
+    fetchProfile(profileClient),
+    fetchActivity(fitbitClient, dateRange),
+    fetchExercise(fitbitClient, dateRange),
+    fetchHeartRate(fitbitClient, dateRange),
+    fetchHrv(fitbitClient, dateRange),
+    fetchSleep(fitbitClient, dateRange),
+    fetchBody(fitbitClient, dateRange),
+    fetchSpO2(fitbitClient, dateRange),
+    fetchBreathingRate(fitbitClient, dateRange),
+    fetchSkinTemp(fitbitClient, dateRange),
+    fetchCardioScore(fitbitClient, dateRange),
+    fetchWater(fitbitClient, dateRange),
+    fetchGlucose(fitbitClient, dateRange),
   ]);
 
   console.log('All Fitbit data fetched successfully.');
 
-  // Fetch nutrition data from Food Scanner
   console.log('Fetching nutrition data from Food Scanner...');
-  const [recentNutrition, historicalNutrition] = await Promise.all([
-    fetchNutrition(foodClient, recentRange),
-    fetchNutrition(foodClient, historicalRange),
-  ]);
-  const nutrition = { recent: recentNutrition, historical: historicalNutrition };
+  const nutrition = await fetchNutrition(foodClient, dateRange);
   console.log('Nutrition data fetched successfully.');
 
   return {
     fitbit: {
       profile,
-      activity: { recent: recentActivity, historical: historicalActivity },
-      exercise: { recent: recentExercise, historical: historicalExercise },
-      heartRate: { recent: recentHeartRate, historical: historicalHeartRate },
-      hrv: { recent: recentHrv, historical: historicalHrv },
-      sleep: { recent: recentSleep, historical: historicalSleep },
-      body: { recent: recentBody, historical: historicalBody },
-      spo2: { recent: recentSpO2, historical: historicalSpO2 },
-      breathingRate: { recent: recentBreathingRate, historical: historicalBreathingRate },
-      skinTemp: { recent: recentSkinTemp, historical: historicalSkinTemp },
-      cardioScore: { recent: recentCardio, historical: historicalCardio },
-      water: { recent: recentWater, historical: historicalWater },
-      glucose: { recent: recentGlucose, historical: historicalGlucose },
+      activity,
+      exercise,
+      heartRate,
+      hrv,
+      sleep,
+      body,
+      spo2,
+      breathingRate,
+      skinTemp,
+      cardioScore,
+      water,
+      glucose,
     },
     nutrition,
   };
